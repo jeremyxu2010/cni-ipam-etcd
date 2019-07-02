@@ -59,22 +59,12 @@ func New(name string, ipamConfig *allocator.IPAMConfig) (*Store, error) {
 
 func initStore(name string, network string, etcdClient *clientv3.Client) (string, error) {
 	key := ETCDPrefix + name
-	resp, err := etcdClient.Get(context.TODO(), key)
+
+	_, err := etcdClient.Put(context.TODO(), key, network)
 	if err != nil {
 		panic(err)
 	}
-
-	// if store doesn't exist we create
-	if resp.Count == 0 {
-		_, err := etcdClient.Put(context.TODO(), key, network)
-		if err != nil {
-			panic(err)
-		}
-		return key, nil
-		// otherwise just use existing store as is
-	} else {
-		return key, nil
-	}
+	return key, nil
 }
 
 func netConfigJson(ipamConfig *allocator.IPAMConfig) (string, error) {
@@ -181,18 +171,16 @@ func (s *Store) Release(ip net.IP) error {
 // release as much as possible
 func (s *Store) ReleaseByID(id string) error {
 	key := s.EtcdKeyPrefix + "/used/"
-	resp, err := s.EtcdClient.Get(context.TODO(), key)
+	resp, err := s.EtcdClient.Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return err
 	}
 	if resp.Count > 0 {
 		for _, kv := range resp.Kvs {
 			if string(kv.Value) == id {
-				_, err = s.EtcdClient.Delete(context.TODO(), key + string(kv.Key))
+				_, err = s.EtcdClient.Delete(context.TODO(), string(kv.Key))
 				if err != nil {
 					return err
-				} else {
-					return nil
 				}
 			}
 		}
@@ -230,7 +218,7 @@ func (s *Store) Lock() error {
 		// define txn
 		txn := kv.Txn(context.TODO())
 		txn.If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).
-			Then(clientv3.OpPut(key, string(leaseId), clientv3.WithLease(leaseId))).
+			Then(clientv3.OpPut(key, strconv.FormatInt(int64(leaseId), 10), clientv3.WithLease(leaseId))).
 			Else(clientv3.OpGet(key))
 
 		// commit txn
@@ -245,6 +233,7 @@ func (s *Store) Lock() error {
 			break
 			// try again
 		} else {
+			time.Sleep(time.Second * 2)
 			continue
 		}
 	}
