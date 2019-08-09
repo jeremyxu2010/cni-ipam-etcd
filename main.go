@@ -23,9 +23,9 @@ import (
 	"github.com/containernetworking/cni/pkg/types"
 	"github.com/containernetworking/cni/pkg/types/current"
 	"github.com/containernetworking/cni/pkg/version"
-	"github.com/jeremyxu2010/cni-ipam-etcd/backend/allocator"
-	"github.com/jeremyxu2010/cni-ipam-etcd/backend/etcd"
-	"github.com/jeremyxu2010/cni-ipam-etcd/backend/dns"
+	"github.com/JaeGerW2016/cni-ipam-etcd/backend/allocator"
+	"github.com/JaeGerW2016/cni-ipam-etcd/backend/etcd"
+	"github.com/JaeGerW2016/cni-ipam-etcd/backend/dns"
 )
 
 func main() {
