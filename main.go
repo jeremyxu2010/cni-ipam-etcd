@@ -25,6 +25,7 @@ import (
 	"github.com/containernetworking/cni/pkg/version"
 	"github.com/jeremyxu2010/cni-ipam-etcd/backend/allocator"
 	"github.com/jeremyxu2010/cni-ipam-etcd/backend/etcd"
+	"github.com/jeremyxu2010/cni-ipam-etcd/backend/dns"
 )
 
 func main() {
@@ -40,7 +41,7 @@ func cmdAdd(args *skel.CmdArgs) error {
 	result := &current.Result{}
 
 	if ipamConf.ResolvConf != "" {
-		dns, err := parseResolvConf(ipamConf.ResolvConf)
+		dns, err := dns.ParseResolvConf(ipamConf.ResolvConf)
 		if err != nil {
 			return err
 		}
