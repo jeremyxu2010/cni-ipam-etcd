@@ -15,6 +15,6 @@ COPY . .
 
 RUN GOOS=linux CGO_ENABLED=0 GOARCH=amd64 go build -ldflags="-s -w" -installsuffix cgo -o cni-ipam-etcd main.go
 
-From scratch 
+From alpine:3.9 
 
 COPY --from=build /go/release/cni-ipam-etcd /
